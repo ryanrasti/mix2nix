@@ -91,13 +91,13 @@ defmodule Mix2nix do
 
 	def nix_expression(
 		allpkgs, _name_str,
-		{:hex, name, version, _hash, builders, deps, "hexpm", hash2}
-	), do: get_hexpm_expression(allpkgs, name, version, builders, deps, hash2)
+		{:hex, name, version, _hash, builders, deps, repo, hash2}
+	), do: get_hexpm_expression(allpkgs, name, version, builders, deps, repo, hash2)
 
 	def nix_expression(
 		allpkgs, _name_str,
-		{:hex, name, version, _hash, builders, deps, "hexpm"}
-	), do: get_hexpm_expression(allpkgs, name, version, builders, deps)
+		{:hex, name, version, _hash, builders, deps, repo}
+	), do: get_hexpm_expression(allpkgs, name, version, builders, deps, repo)
 
     def nix_expression(_allpkgs, name_str, {:git, url, rev, []}) do
 		"""
@@ -121,7 +121,7 @@ defmodule Mix2nix do
 		""
 	end
 
-	defp get_hexpm_expression(allpkgs, name, version, builders, deps, sha256 \\ nil) do
+	defp get_hexpm_expression(allpkgs, name, version, builders, deps, repo, sha256 \\ nil) do
 		name = Atom.to_string(name)
 		buildEnv = get_build_env(builders, name)
 		sha256 = sha256 || get_hash(name, version)
@@ -136,6 +136,7 @@ defmodule Mix2nix do
 		        pkg = "${name}";
 		        version = "${version}";
 		        sha256 = "#{sha256}";
+		        repo = "#{repo}";
 		      };
 
 		      beamDeps = #{deps};
