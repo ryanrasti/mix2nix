@@ -170,9 +170,9 @@ defmodule Mix2nix do
 		        # The main package
 		        cp -r . $out
 		        # Metadata: version
-		        echo "File.write!(\\"$version\\", Mix.Project.config()[:version])" | iex -S mix cmd true
+		        echo "File.write!(\\"$version\\", Mix.Project.config()[:version]); System.halt(0)" | iex -S mix cmd true
 		        # Metadata: deps as a newline separated string
-		        echo "File.write!(\\"$deps\\", Mix.Project.config()[:deps] |> Enum.map(& &1 |> elem(0) |> Atom.to_string()) |> Enum.join(\\" \\"))" | iex -S mix cmd true
+		        echo "File.write!(\\"$deps\\", Mix.Project.config()[:deps] |> Enum.map(& &1 |> elem(0) |> Atom.to_string()) |> Enum.join(\\" \\")); System.halt(0)" | iex -S mix cmd true
 		    '';
 		  };
 
