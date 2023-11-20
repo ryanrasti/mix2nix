@@ -169,19 +169,26 @@ defmodule Mix2nix do
 		    installPhase = ''
 		        # The main package
 		        cp -r . $out
-		        # Metadata: version
-		        echo "File.write!(\\"$version\\", Mix.Project.config()[:version]); System.halt(0)" | iex -S mix cmd true
-		        # Metadata: deps as a newline separated string
-		        echo "File.write!(\\"$deps\\", Mix.Project.config()[:deps] |> Enum.map(& &1 |> elem(0) |> Atom.to_string()) |> Enum.join(\\" \\")); System.halt(0)" | iex -S mix cmd true
-		    '';
-		  };
+    		# Use a signal file to indicate when iex is ready to receive stdin
+    				signal=.signal
 
-		  self = packages // (overrides self packages);
+            # Write out deps & version
+            (while [ ! -f $signal ];\
+    					do sleep .1;\
+    				done;\
+    		    echo "File.write!(\\"$version\\", Mix.Project.config()[:version]);\
+    		     File.write!(\\"$deps\\", Mix.Project.config()[:deps] |> Enum.map(& &1 |> elem(0) |> Atom.to_string()) |> Enum.join(\\" \\"));\
+    				System.halt(0)"\
+    		) | iex -S mix cmd touch $signal
+        '';
+      };
 
-		  packages = with beamPackages; with self; {
-		#{pkgs}
-		  };
-		in self
-		"""
-	end
+      self = packages // (overrides self packages);
+
+      packages = with beamPackages; with self; {
+    #{pkgs}
+      };
+    in self
+    """
+  end
 end
